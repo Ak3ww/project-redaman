@@ -15,6 +15,9 @@ services:
       timeout: 5s
       retries: 5
 
+  # ============================================================================
+  # CLIENT 1 (Instance 1: acs.euginemediagroup.site)
+  # ============================================================================
   genieacs-cwmp:
     build: .
     image: project-redaman-genieacs:latest
@@ -75,6 +78,75 @@ services:
       - "3000:3000"
     env_file:
       - genieacs.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  # ============================================================================
+  # CLIENT 2 (Instance 2: acs2.euginemediagroup.site)
+  # ============================================================================
+  genieacs-cwmp-client2:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-cwmp-client2
+    restart: always
+    command: ["genieacs-cwmp"]
+    ports:
+      - "7548:7548"
+    env_file:
+      - genieacs-client2.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-nbi-client2:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-nbi-client2
+    restart: always
+    command: ["genieacs-nbi"]
+    ports:
+      - "7558:7558"
+    env_file:
+      - genieacs-client2.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-fs-client2:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-fs-client2
+    restart: always
+    command: ["genieacs-fs"]
+    ports:
+      - "7568:7568"
+    env_file:
+      - genieacs-client2.env
+    volumes:
+      - ./data/fs-client2:/var/lib/genieacs
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-ui-client2:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-ui-client2
+    restart: always
+    command: ["genieacs-ui"]
+    ports:
+      - "3001:3001"
+    env_file:
+      - genieacs-client2.env
     depends_on:
       mongo:
         condition: service_healthy
