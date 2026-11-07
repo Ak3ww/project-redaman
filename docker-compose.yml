@@ -1,0 +1,86 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: genieacs-mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=genieacs
+    volumes:
+      - ./data/mongo:/data/db
+    networks:
+      - genieacs-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  genieacs-cwmp:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-cwmp
+    restart: always
+    command: ["genieacs-cwmp"]
+    ports:
+      - "7547:7547"
+    env_file:
+      - genieacs.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-nbi:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-nbi
+    restart: always
+    command: ["genieacs-nbi"]
+    ports:
+      - "7557:7557"
+    env_file:
+      - genieacs.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-fs:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-fs
+    restart: always
+    command: ["genieacs-fs"]
+    ports:
+      - "7567:7567"
+    env_file:
+      - genieacs.env
+    volumes:
+      - ./data/fs:/var/lib/genieacs
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+  genieacs-ui:
+    build: .
+    image: project-redaman-genieacs:latest
+    container_name: genieacs-ui
+    restart: always
+    command: ["genieacs-ui"]
+    ports:
+      - "3000:3000"
+    env_file:
+      - genieacs.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - genieacs-net
+
+networks:
+  genieacs-net:
+    driver: bridge

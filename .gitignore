@@ -1,0 +1,12 @@
+# Data and logs
+data/
+data/mongo/
+data/fs/
+data/log/
+*.log
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
